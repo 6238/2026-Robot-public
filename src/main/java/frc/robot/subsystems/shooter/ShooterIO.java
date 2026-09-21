@@ -1,0 +1,39 @@
+package frc.robot.subsystems.shooter;
+
+import static edu.wpi.first.units.Units.*;
+
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
+import org.littletonrobotics.junction.AutoLog;
+
+public interface ShooterIO {
+  @AutoLog
+  public static class ShooterIOInputs {
+    public boolean flywheelTalonConnected = false;
+    public boolean feederTalonConnected = false;
+    public boolean beamBreakTriggered = false;
+
+    public AngularVelocity flywheelVelocity = RotationsPerSecond.of(0);
+    public Current flywheelSupplyCurrent = Amps.of(0);
+    public Current flywheel2SupplyCurrent = Amps.of(0);
+    public Voltage flywheelAppliedVoltage = Volts.of(0);
+
+    public AngularVelocity feederVelocity = RotationsPerSecond.of(0);
+    public Current feederSupplyCurrent = Amps.of(0);
+    public Voltage feederAppliedVoltage = Volts.of(0);
+  }
+
+  public default void setFlywheelSpeed(AngularVelocity rpm) {}
+
+  public default void setFlywheelVoltage(Voltage voltage) {}
+
+  public default void setFeederVoltage(Voltage voltage) {}
+
+  public default void setFeederSpeed(AngularVelocity speed) {}
+
+  public default void updateInputs(ShooterIOInputs inputs) {}
+
+  /** Reconfigures flywheel and feeder current limits. No-op in sim/test. */
+  public default void setDefenseMode(boolean active) {}
+}

@@ -1,0 +1,153 @@
+package frc.robot.subsystems.intake;
+
+import static edu.wpi.first.units.Units.*;
+import static frc.robot.util.PhoenixUtil.tryUntilOk;
+
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.ParentDevice;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
+import frc.robot.Constants;
+import frc.robot.util.AlertUtils;
+import frc.robot.util.BetterStatusSignalCollection;
+
+public class IntakePivotIOTalonFX implements IntakePivotIO {
+  private Alert statusSignalAlert = new Alert("ISSUE", "Status Signal Error", AlertType.kError);
+  private Alert intakeArmConfigAlert =
+      new Alert("CRITICAL", "Failed to Configure Intake Arm Motor", AlertType.kError);
+
+  public TalonFX intakeArmTalon;
+
+  public BetterStatusSignalCollection statusSignalCollector;
+
+  public StatusSignal<Angle> intakeArmPosition;
+  public StatusSignal<AngularVelocity> intakeArmVelocity;
+  public StatusSignal<Current> intakeArmSupplyCurrent;
+  public StatusSignal<Current> intakeArmStatorCurrent;
+  public StatusSignal<Voltage> intakeArmVoltage;
+  private CANcoder cancoder;
+
+  public MotionMagicVoltage motionMagicVoltageArm = new MotionMagicVoltage(0).withSlot(0);
+
+  public IntakePivotIOTalonFX() {
+    this.intakeArmTalon =
+        new TalonFX(IntakeConstants.INTAKE_ARM_MOTOR_ID, IntakeConstants.PIVOT_CAN_BUS);
+
+    this.cancoder = new CANcoder(56, IntakeConstants.PIVOT_CAN_BUS);
+
+    TalonFXConfiguration intakeArmConfig = new TalonFXConfiguration();
+    intakeArmConfig.Feedback.RotorToSensorRatio = -IntakeConstants.INTAKE_ARM_GEARING;
+    intakeArmConfig.MotorOutput.Inverted = IntakeConstants.INTAKE_ARM_MOTOR_DIRECTION;
+    intakeArmConfig.Slot0 = IntakeConstants.INTAKE_ARM_GAINS.toSlot0Configs();
+    intakeArmConfig.MotionMagic = IntakeConstants.INTAKE_ARM_MOTION_MAGIC_CONFIGS;
+    intakeArmConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+    intakeArmConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    intakeArmConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    intakeArmConfig.CurrentLimits.StatorCurrentLimit = 60;
+    intakeArmConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    intakeArmConfig.CurrentLimits.SupplyCurrentLimit = 30;
+    intakeArmConfig.CurrentLimits.SupplyCurrentLowerLimit = 25;
+    intakeArmConfig.CurrentLimits.SupplyCurrentLowerTime = 0.5;
+
+    intakeArmConfig.Feedback.FeedbackRemoteSensorID = IntakeConstants.INTAKE_CANCODER_ID;
+    intakeArmConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+
+    AlertUtils.processCriticalAlert(
+        intakeArmConfigAlert,
+        !tryUntilOk(
+            Constants.MAX_PHEONIX_RETRIES,
+            () -> intakeArmTalon.getConfigurator().apply(intakeArmConfig)));
+
+    CANcoderConfiguration cc_cfg = new CANcoderConfiguration();
+    cc_cfg.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+    cc_cfg.MagnetSensor.MagnetOffset = -0.16;
+    cancoder.getConfigurator().apply(cc_cfg);
+
+    intakeArmPosition = intakeArmTalon.getPosition();
+    intakeArmVelocity = intakeArmTalon.getVelocity();
+    intakeArmSupplyCurrent = intakeArmTalon.getSupplyCurrent();
+    intakeArmStatorCurrent = intakeArmTalon.getStatorCurrent();
+    intakeArmVoltage = intakeArmTalon.getMotorVoltage();
+
+    statusSignalCollector =
+        new BetterStatusSignalCollection(
+            intakeArmPosition,
+            intakeArmVelocity,
+            intakeArmSupplyCurrent,
+            intakeArmStatorCurrent,
+            intakeArmVoltage);
+    intakeArmPosition.setUpdateFrequency(50);
+    intakeArmVelocity.setUpdateFrequency(50);
+    intakeArmSupplyCurrent.setUpdateFrequency(20);
+    intakeArmStatorCurrent.setUpdateFrequency(20);
+    intakeArmVoltage.setUpdateFrequency(20);
+    ParentDevice.optimizeBusUtilizationForAll(intakeArmTalon);
+  }
+
+  @Override
+  public void updateInputs(IntakePivotIOInputs inputs) {
+    statusSignalCollector.refreshAll();
+
+    if (!statusSignalCollector.isAllGood()) {
+      statusSignalAlert.set(true);
+      statusSignalAlert.setText(
+          "Intake Pivot TalonFX Status Signal Error: "
+              + statusSignalCollector.getBadSignalsString());
+    } else {
+      statusSignalAlert.set(false);
+    }
+
+    inputs.intakeArmTalonConnected = intakeArmPosition.getStatus().isOK();
+    inputs.intakeArmPosition = intakeArmPosition.getValue();
+    inputs.intakeArmVelocity = intakeArmVelocity.getValue();
+    inputs.intakeArmSupplyCurrent = intakeArmSupplyCurrent.getValue();
+    inputs.intakeArmStatorCurrent = intakeArmStatorCurrent.getValue();
+    inputs.intakeArmAppliedVoltage = intakeArmVoltage.getValue();
+  }
+
+  @Override
+  public void setIntakePosition(Angle targetAngle) {
+    intakeArmTalon.setControl(motionMagicVoltageArm.withPosition(targetAngle));
+  }
+
+  @Override
+  public void setIntakeArmVoltage(Voltage volts) {
+    intakeArmTalon.setVoltage(volts.in(Volts));
+  }
+
+  @Override
+  public void resetArmAngle() {
+    intakeArmTalon.setPosition(Degrees.of(IntakeConstants.INTAKE_DOWN_VALUE.get()));
+  }
+
+  @Override
+  public void setBrakeMode(boolean brake) {
+    intakeArmTalon.setNeutralMode(brake ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+  }
+
+  @Override
+  public void setDefenseMode(boolean active) {
+    var limits =
+        new CurrentLimitsConfigs()
+            .withSupplyCurrentLimitEnable(true)
+            .withSupplyCurrentLimit(active ? 15.0 : 30.0)
+            .withSupplyCurrentLowerLimit(active ? 15.0 : 20.0)
+            .withStatorCurrentLimit(active ? 20.0 : 40.0)
+            .withStatorCurrentLimitEnable(true);
+    intakeArmTalon.getConfigurator().apply(limits, 0.0);
+  }
+}

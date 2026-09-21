@@ -1,0 +1,142 @@
+<svg width="740" height="540" xmlns="http://www.w3.org/2000/svg" font-family="'Courier New', monospace">
+
+  <!-- Background -->
+  <rect width="740" height="540" fill="#0d1117" rx="10"/>
+
+  <!-- Title -->
+  <text x="370" y="32" text-anchor="middle" fill="white" font-size="17" font-weight="bold">Shooting While Moving: Virtual Target Solver</text>
+
+  <!-- Panel divider -->
+  <line x1="370" y1="50" x2="370" y2="510" stroke="#333" stroke-width="1.5"/>
+
+  <!-- ═══════════════════════════════════════════
+       LEFT PANEL — Naive: aim straight at hub
+       Robot: (80, 415) center
+       Hub:   (255, 145)
+       Aim direction vector: (175, -270)
+       Robot velocity: (80, 0) rightward
+       Ball field vel: (255, -270)  → lands at (335, 145)  MISS
+       ═══════════════════════════════════════════ -->
+
+  <text x="185" y="68" text-anchor="middle" fill="#FF6B6B" font-size="14" font-weight="bold">✗  Without Correction</text>
+
+  <!-- Hub (left) -->
+  <circle cx="255" cy="145" r="20" fill="#FFD700" stroke="#FFA500" stroke-width="2.5"/>
+  <text x="255" y="150" text-anchor="middle" fill="#111" font-size="12" font-weight="bold">HUB</text>
+
+  <!-- Miss marker -->
+  <circle cx="335" cy="145" r="14" fill="none" stroke="#FF6B6B" stroke-width="2.5"/>
+  <line x1="325" y1="135" x2="345" y2="155" stroke="#FF6B6B" stroke-width="2.5"/>
+  <line x1="345" y1="135" x2="325" y2="155" stroke="#FF6B6B" stroke-width="2.5"/>
+  <text x="335" y="172" text-anchor="middle" fill="#FF6B6B" font-size="11">lands here</text>
+
+  <!-- Miss gap label -->
+  <line x1="276" y1="127" x2="321" y2="127" stroke="#FF6B6B" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="276" y1="123" x2="276" y2="131" stroke="#FF6B6B" stroke-width="1"/>
+  <line x1="321" y1="123" x2="321" y2="131" stroke="#FF6B6B" stroke-width="1"/>
+  <text x="299" y="121" text-anchor="middle" fill="#FF6B6B" font-size="10">drift = v×t</text>
+
+  <!-- Robot (left) -->
+  <rect x="55" y="398" width="50" height="38" rx="4" fill="#4A90D9" stroke="#2172B5" stroke-width="2"/>
+  <text x="80" y="421" text-anchor="middle" fill="white" font-size="11" font-weight="bold">BOT</text>
+
+  <!-- Robot velocity arrow (left) -->
+  <line x1="105" y1="417" x2="165" y2="417" stroke="#00FF88" stroke-width="2.5" marker-end="url(#mg)"/>
+  <text x="135" y="440" text-anchor="middle" fill="#00FF88" font-size="11">v (robot vel)</text>
+
+  <!-- Naive aim: robot → hub (white dashed) -->
+  <line x1="80" y1="398" x2="250" y2="163" stroke="white" stroke-width="1.5" stroke-dasharray="7,4" marker-end="url(#mw)"/>
+  <text x="130" y="302" text-anchor="middle" fill="white" font-size="11">aims at hub</text>
+  <text x="130" y="315" text-anchor="middle" fill="#888" font-size="10">(naive)</text>
+
+  <!-- Ball field path: robot → miss (red dashed) -->
+  <!-- from (80,415) direction (255,-270), hits y=145 at t=1: x=80+255=335 -->
+  <line x1="80" y1="415" x2="335" y2="145" stroke="#FF6B6B" stroke-width="2.5" stroke-dasharray="5,3" marker-end="url(#mr)"/>
+  <text x="248" y="318" text-anchor="middle" fill="#FF6B6B" font-size="11">actual ball path</text>
+  <text x="248" y="331" text-anchor="middle" fill="#FF6B6B" font-size="10">(field frame)</text>
+
+
+  <!-- ═══════════════════════════════════════════
+       RIGHT PANEL — Corrected: aim at virtual target
+       Robot:          (450, 415) center
+       Hub:            (625, 145)
+       Virtual target: (545, 145)   [625 - 80×1 = 545]
+       Aim direction:  (95, -270)
+       Robot velocity: (80, 0) rightward
+       Ball field vel: (175, -270)  → lands at (625, 145)  HIT
+       ═══════════════════════════════════════════ -->
+
+  <text x="555" y="68" text-anchor="middle" fill="#00CC88" font-size="14" font-weight="bold">✓  With Virtual Target</text>
+
+  <!-- Hub (right) -->
+  <circle cx="625" cy="145" r="20" fill="#FFD700" stroke="#FFA500" stroke-width="2.5"/>
+  <text x="625" y="150" text-anchor="middle" fill="#111" font-size="12" font-weight="bold">HUB</text>
+  <text x="625" y="122" text-anchor="middle" fill="#FFD700" font-size="12">H</text>
+
+  <!-- Virtual target circle -->
+  <circle cx="545" cy="145" r="20" fill="#1a1a2e" stroke="#FF9F43" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="545" y="150" text-anchor="middle" fill="#FF9F43" font-size="10" font-weight="bold">V</text>
+  <text x="545" y="119" text-anchor="middle" fill="#FF9F43" font-size="11">Virtual</text>
+  <text x="545" y="107" text-anchor="middle" fill="#FF9F43" font-size="11">Target</text>
+
+  <!-- v×t span between V and H -->
+  <line x1="566" y1="127" x2="605" y2="127" stroke="#FF9F43" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <line x1="566" y1="123" x2="566" y2="131" stroke="#FF9F43" stroke-width="1.5"/>
+  <line x1="605" y1="123" x2="605" y2="131" stroke="#FF9F43" stroke-width="1.5"/>
+  <text x="586" y="121" text-anchor="middle" fill="#FF9F43" font-size="10">v×t</text>
+
+  <!-- Robot (right) -->
+  <rect x="425" y="398" width="50" height="38" rx="4" fill="#4A90D9" stroke="#2172B5" stroke-width="2"/>
+  <text x="450" y="421" text-anchor="middle" fill="white" font-size="11" font-weight="bold">BOT</text>
+
+  <!-- Robot velocity arrow (right) -->
+  <line x1="475" y1="417" x2="535" y2="417" stroke="#00FF88" stroke-width="2.5" marker-end="url(#mg)"/>
+  <text x="505" y="440" text-anchor="middle" fill="#00FF88" font-size="11">v (robot vel)</text>
+
+  <!-- Aim: robot → virtual target (orange dashed) -->
+  <!-- from (450, 415) to (545, 145): direction (95, -270) -->
+  <line x1="450" y1="398" x2="540" y2="163" stroke="#FF9F43" stroke-width="2" stroke-dasharray="7,4" marker-end="url(#mo)"/>
+  <text x="470" y="297" text-anchor="middle" fill="#FF9F43" font-size="11">aims at V</text>
+  <text x="470" y="310" text-anchor="middle" fill="#FF9F43" font-size="10">(corrected)</text>
+
+  <!-- Ball field path: robot → hub (green solid) -->
+  <!-- from (450,415), vel (95+80, -270)=(175,-270), hits y=145 at t=1: x=450+175=625 ✓ -->
+  <line x1="450" y1="415" x2="625" y2="145" stroke="#00CC88" stroke-width="3" marker-end="url(#mg2)"/>
+  <text x="569" y="308" text-anchor="middle" fill="#00CC88" font-size="11">ball path → HUB ✓</text>
+  <text x="569" y="321" text-anchor="middle" fill="#00CC88" font-size="10">(field frame)</text>
+
+  <!-- ═══ Velocity decomposition callout (right panel) ═══ -->
+  <rect x="378" y="455" width="348" height="48" fill="#1a1a2e" rx="5" stroke="#333" stroke-width="1"/>
+  <text x="552" y="472" text-anchor="middle" fill="white" font-size="11">ball field vel  =  aim direction  +  robot vel</text>
+  <text x="552" y="490" text-anchor="middle" fill="#aaa" font-size="10">(95, −270)  +  (80, 0)  =  (175, −270)  →  lands at hub ✓</text>
+
+  <!-- ═══ Iteration note (left panel bottom) ═══ -->
+  <rect x="12" y="455" width="350" height="48" fill="#1a1a2e" rx="5" stroke="#333" stroke-width="1"/>
+  <text x="187" y="472" text-anchor="middle" fill="white" font-size="11">ball field vel  =  aim direction  +  robot vel</text>
+  <text x="187" y="490" text-anchor="middle" fill="#aaa" font-size="10">(175, −270)  +  (80, 0)  =  (255, −270)  →  misses by v×t</text>
+
+  <!-- ═══ Footer ═══ -->
+  <rect x="0" y="510" width="740" height="30" fill="#111" rx="0"/>
+  <rect x="0" y="510" width="740" height="30" fill="#111" rx="5"/>
+  <text x="370" y="530" text-anchor="middle" fill="#888" font-size="11">V = H − v×t   |   Lead time t solved iteratively: seed from |H−R|, compute V, recompute t, repeat ×3</text>
+
+  <!-- ═══ Arrow marker defs ═══ -->
+  <defs>
+    <marker id="mg" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#00FF88"/>
+    </marker>
+    <marker id="mg2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#00CC88"/>
+    </marker>
+    <marker id="mw" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="white"/>
+    </marker>
+    <marker id="mr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#FF6B6B"/>
+    </marker>
+    <marker id="mo" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#FF9F43"/>
+    </marker>
+  </defs>
+
+</svg>
