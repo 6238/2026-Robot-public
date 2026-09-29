@@ -2,6 +2,14 @@
 
 WPILib Command-based Java robot with [AdvantageKit](https://github.com/Mechanical-Advantage/AdvantageKit) logging and replay.
 
+## Post Season Comments
+
+There are a lot of problems with this codebase. Some major ones:
+1. Superstructure Scope: The supersturcture currently often reaches into subsystem io classes directly which is a really bad practice. They should go through the subsystems directly.
+2. Dead code and auto routines: There were a lot of experimental automations that were put in place, however throughout the season I got pretty lazy about git and never had a PR review, meaning often times changes would be bulk committed after a 6 hour field session and I was too tired to properly go through the code and cleanup past experiments. I never ended up going back through and cleaning them up.
+3. Vision calibration: While this is much better than last year, there a lot more new techniques I learned to properly calibrate and tune vision systems that I never got to apply. In general our system didn't trust pose updates enough.
+4. Tests are mostly testing implementation details, not actual logic. The test suite almost never caught anything.
+
 ---
 
 ## Table of Contents
@@ -207,17 +215,6 @@ Accepted poses are sent to `drive::addVisionMeasurement()`. Rejected poses are l
 ---
 
 ## Special Features
-
-### Defense Mode (Y Button)
-
-Toggles runtime current limits via TalonFX reconfiguration:
-
-| Subsystem | Normal | Defense |
-|-----------|--------|---------|
-| Drive supply / stator | 55 A / 102 A | 80 A / 120 A |
-| Shooter, Hopper, Intake | Normal | Reduced (frees bus current for drive) |
-
-Resets to OFF at every `teleopInit()`.
 
 ### Alignment (B & X Buttons)
 
